@@ -49,4 +49,10 @@ dependencies {
 
     // Gson for data persistence
     implementation 'com.google.code.gson:gson:2.9.0'
+
+    // Preferences for settings screen
+    implementation 'androidx.preference:preference-ktx:1.2.1'
+
+    // Spotify Android SDK
+    implementation "com.spotify.android:auth:1.2.3"
 }

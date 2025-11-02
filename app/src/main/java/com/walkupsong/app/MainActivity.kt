@@ -1,22 +1,24 @@
 package com.walkupsong.app
 
 import android.content.Context
+import android.content.Intent
 import android.media.MediaPlayer
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.Toolbar
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,12 +28,17 @@ class MainActivity : AppCompatActivity() {
     private var players: MutableList<Player> = mutableListOf()
     private var mediaPlayer: MediaPlayer? = null
     private var selectedPlayer: Player? = null
+    private lateinit var musicService: MusicService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
         loadPlayers()
+        initializeMusicService()
 
         searchViewSong = findViewById(R.id.searchViewSong)
         recyclerViewPlayers = findViewById(R.id.recyclerViewBattingOrder)
@@ -66,10 +73,43 @@ class MainActivity : AppCompatActivity() {
         setupSearchView()
     }
 
+    override fun onResume() {
+        super.onResume()
+        initializeMusicService()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivity(intent)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun initializeMusicService() {
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val musicSource = sharedPreferences.getString("music_source", "deezer")
+        musicService = if (musicSource == "spotify") {
+            SpotifyService(this)
+        } else {
+            DeezerService()
+        }
+    }
+
     private fun setupRecyclerView() {
         playerAdapter = PlayerAdapter(players) { player ->
+            players.forEach { it.isSelected = false }
+            player.isSelected = true
             selectedPlayer = player
-            Toast.makeText(this, "Selected: ${player.name}", Toast.LENGTH_SHORT).show()
+            playerAdapter.notifyDataSetChanged()
         }
         recyclerViewPlayers.layoutManager = LinearLayoutManager(this)
         recyclerViewPlayers.adapter = playerAdapter
@@ -95,32 +135,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun searchTracks(query: String) {
-        RetrofitClient.instance.searchTracks(query).enqueue(object : Callback<DeezerResponse> {
-            override fun onResponse(call: Call<DeezerResponse>, response: Response<DeezerResponse>) {
-                if (response.isSuccessful) {
-                    response.body()?.data?.let {
-                        showSongSelectionDialog(it)
-                    }
-                } else {
-                    Log.e("API_ERROR", "Failed to fetch songs: ${response.code()}")
-                    Toast.makeText(this@MainActivity, "Failed to fetch songs. Please try again later.", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            override fun onFailure(call: Call<DeezerResponse>, t: Throwable) {
-                Log.e("API_FAILURE", "Failed to fetch songs", t)
-                Toast.makeText(this@MainActivity, "An error occurred. Please check your internet connection.", Toast.LENGTH_SHORT).show()
-            }
-        })
+        musicService.searchTracks(query) { tracks ->
+            showSongSelectionDialog(tracks)
+        }
     }
 
-    private fun showSongSelectionDialog(songs: List<Song>) {
-        val songTitles = songs.map { it.title }.toTypedArray()
+    private fun showSongSelectionDialog(tracks: List<Track>) {
+        val songTitles = tracks.map { it.title }.toTypedArray()
         AlertDialog.Builder(this)
             .setTitle("Select a Song")
             .setItems(songTitles) { _, which ->
-                val selectedSong = songs[which]
-                selectedPlayer?.songUri = selectedSong.preview
+                val selectedSong = tracks[which]
+                selectedPlayer?.songUri = selectedSong.previewUrl
                 selectedPlayer?.songTitle = selectedSong.title
                 val index = players.indexOf(selectedPlayer)
                 if (index != -1) {

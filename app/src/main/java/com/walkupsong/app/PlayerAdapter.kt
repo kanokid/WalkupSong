@@ -1,5 +1,6 @@
 package com.walkupsong.app
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -37,6 +38,7 @@ class PlayerAdapter(
             playerName.text = player.name
             playerNumber.text = "#${player.number}"
             playerSong.text = player.songTitle ?: "No song selected"
+            itemView.setBackgroundColor(if (player.isSelected) Color.LTGRAY else Color.TRANSPARENT)
             itemView.setOnClickListener { onPlayerSelected(player) }
         }
     }
