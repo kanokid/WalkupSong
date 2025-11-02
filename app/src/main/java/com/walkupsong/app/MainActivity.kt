@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
 
     private val STORAGE_PERMISSION_CODE = 1
 
-    private val selectFileLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri?-
+    private val selectFileLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri?-
         uri?.let {
             contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION)
             showTimeSelectionDialog(it)
@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Please select a player first", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            selectFileLauncher.launch("audio/*")
+            selectFileLauncher.launch(arrayOf("audio/*"))
         }
 
         setupRecyclerView()
