@@ -1,0 +1,30 @@
+[
+    {
+        "merged": "com.walkupsong.app-debug-40:/menu_main_menu.xml.flat",
+        "source": "com.walkupsong.app-main-42:/menu/main_menu.xml"
+    },
+    {
+        "merged": "com.walkupsong.app-debug-40:/xml_preferences.xml.flat",
+        "source": "com.walkupsong.app-main-42:/xml/preferences.xml"
+    },
+    {
+        "merged": "com.walkupsong.app-debug-40:/layout_dialog_time_selection.xml.flat",
+        "source": "com.walkupsong.app-main-42:/layout/dialog_time_selection.xml"
+    },
+    {
+        "merged": "com.walkupsong.app-debug-40:/drawable_ic_settings.xml.flat",
+        "source": "com.walkupsong.app-main-42:/drawable/ic_settings.xml"
+    },
+    {
+        "merged": "com.walkupsong.app-debug-40:/layout_activity_settings.xml.flat",
+        "source": "com.walkupsong.app-main-42:/layout/activity_settings.xml"
+    },
+    {
+        "merged": "com.walkupsong.app-debug-40:/layout_activity_main.xml.flat",
+        "source": "com.walkupsong.app-main-42:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.walkupsong.app-debug-40:/layout_list_item_player.xml.flat",
+        "source": "com.walkupsong.app-main-42:/layout/list_item_player.xml"
+    }
+]

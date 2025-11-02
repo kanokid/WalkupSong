@@ -1,0 +1,4 @@
+com.walkupsong.app.test.app-androidTest-0 C:\Users\colte\Downloads\WalkupSong-main\app\build\generated\res\resValues\androidTest\debug
+com.walkupsong.app.test.app-mergeDebugAndroidTestResources-1 C:\Users\colte\Downloads\WalkupSong-main\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
+com.walkupsong.app.test.app-mergeDebugAndroidTestResources-2 C:\Users\colte\Downloads\WalkupSong-main\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
+com.walkupsong.app.test.app-debugAndroidTest-3 C:\Users\colte\Downloads\WalkupSong-main\app\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources
