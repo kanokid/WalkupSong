@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
@@ -216,7 +217,7 @@ class MainActivity : AppCompatActivity() {
 
                 if (endTime > startTime) {
                     selectedPlayer?.songPath = uri.toString()
-                    selectedPlayer?.songTitle = "Local File"
+                    selectedPlayer?.songTitle = getSongTitle(uri)
                     selectedPlayer?.startTime = startTime
                     selectedPlayer?.endTime = endTime
                     val index = players.indexOf(selectedPlayer)
@@ -231,6 +232,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
         dialog.show()
+    }
+
+    private fun getSongTitle(uri: Uri): String {
+        val retriever = MediaMetadataRetriever()
+        retriever.setDataSource(this, uri)
+        val title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
+        retriever.release()
+        return title ?: "Unknown Title"
     }
 
     override fun onDestroy() {

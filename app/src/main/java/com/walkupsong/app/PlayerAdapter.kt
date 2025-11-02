@@ -1,5 +1,6 @@
 package com.walkupsong.app
 
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,12 +40,14 @@ class PlayerAdapter(
             playerName.text = player.name
             playerNumber.text = "#${player.number}"
             playerSong.text = player.songTitle ?: "No song selected"
-            val color = if (player.isSelected) {
-                ContextCompat.getColor(itemView.context, R_material.color.material_dynamic_secondary90)
+            val colorAttr = if (player.isSelected) {
+                R_material.attr.colorSecondaryContainer
             } else {
-                ContextCompat.getColor(itemView.context, android.R.color.transparent)
+                android.R.attr.colorBackground
             }
-            itemView.setBackgroundColor(color)
+            val typedValue = TypedValue()
+            itemView.context.theme.resolveAttribute(colorAttr, typedValue, true)
+            itemView.setBackgroundColor(typedValue.data)
             itemView.setOnClickListener { onPlayerSelected(player) }
         }
     }

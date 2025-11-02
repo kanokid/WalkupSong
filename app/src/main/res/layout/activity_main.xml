@@ -27,63 +27,82 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/appBarLayout">
 
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textFieldPlayerName"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/addPlayerCard"
+            style="?attr/materialCardViewElevatedStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:hint="Player Name"
-            app:layout_constraintEnd_toStartOf="@+id/textFieldPlayerNumber"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editTextPlayerName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textFieldPlayerNumber"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:hint="Number"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/textFieldPlayerName"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editTextPlayerNumber"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonAddPlayer"
-            style="@style/Widget.Material3.Button.ElevatedButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Add Player"
-            app:layout_constraintEnd_toStartOf="@+id/buttonSelectFile"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textFieldPlayerName" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonSelectFile"
-            style="@style/Widget.Material3.Button.ElevatedButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:text="Select Local File"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/buttonAddPlayer"
-            app:layout_constraintTop_toBottomOf="@+id/textFieldPlayerName" />
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/textFieldPlayerName"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Player Name">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editTextPlayerName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/textFieldPlayerNumber"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="120dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:hint="Number">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editTextPlayerNumber"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonAddPlayer"
+                        style="@style/Widget.Material3.Button.ElevatedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Add Player" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonSelectFile"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:text="Select File"
+                        app:icon="@drawable/ic_folder" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewBattingOrder"
@@ -94,7 +113,7 @@
             app:layout_constraintBottom_toTopOf="@+id/playbackControls"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/buttonAddPlayer"
+            app:layout_constraintTop_toBottomOf="@+id/addPlayerCard"
             tools:listitem="@layout/list_item_player" />
 
         <LinearLayout
@@ -112,7 +131,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Play" />
+                app:icon="@drawable/ic_play_arrow" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonPause"
@@ -122,7 +141,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
-                android:text="Pause" />
+                app:icon="@drawable/ic_pause" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonStop"
@@ -130,7 +149,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Stop" />
+                app:icon="@drawable/ic_stop" />
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
