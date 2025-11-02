@@ -69,19 +69,21 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Add Player"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/buttonSelectFile"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textFieldPlayerName" />
 
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/searchViewSong"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonSelectFile"
+            style="@style/Widget.Material3.Button.ElevatedButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:queryHint="Search for a song..."
+            android:text="Select Local File"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/buttonAddPlayer" />
+            app:layout_constraintStart_toEndOf="@+id/buttonAddPlayer"
+            app:layout_constraintTop_toBottomOf="@+id/textFieldPlayerName" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewBattingOrder"
@@ -92,7 +94,7 @@
             app:layout_constraintBottom_toTopOf="@+id/playbackControls"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/searchViewSong"
+            app:layout_constraintTop_toBottomOf="@+id/buttonAddPlayer"
             tools:listitem="@layout/list_item_player" />
 
         <LinearLayout

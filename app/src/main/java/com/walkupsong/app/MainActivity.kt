@@ -1,19 +1,27 @@
 package com.walkupsong.app
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.MediaPlayer
+import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import android.os.Handler
+import android.os.Looper
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
-import androidx.preference.PreferenceManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
@@ -22,13 +30,21 @@ import com.google.gson.reflect.TypeToken
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var searchViewSong: SearchView
     private lateinit var recyclerViewPlayers: RecyclerView
     private lateinit var playerAdapter: PlayerAdapter
     private var players: MutableList<Player> = mutableListOf()
     private var mediaPlayer: MediaPlayer? = null
     private var selectedPlayer: Player? = null
-    private lateinit var musicService: MusicService
+    private val handler = Handler(Looper.getMainLooper())
+
+    private val STORAGE_PERMISSION_CODE = 1
+
+    private val selectFileLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri?-
+        uri?.let {
+            contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            showTimeSelectionDialog(it)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,19 +54,19 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         loadPlayers()
-        initializeMusicService()
+        requestStoragePermission()
 
-        searchViewSong = findViewById(R.id.searchViewSong)
         recyclerViewPlayers = findViewById(R.id.recyclerViewBattingOrder)
         val editTextPlayerName = findViewById<TextInputEditText>(R.id.editTextPlayerName)
         val editTextPlayerNumber = findViewById<TextInputEditText>(R.id.editTextPlayerNumber)
         val buttonAddPlayer = findViewById<Button>(R.id.buttonAddPlayer)
+        val buttonSelectFile = findViewById<Button>(R.id.buttonSelectFile)
         val buttonPlay = findViewById<Button>(R.id.buttonPlay)
         val buttonPause = findViewById<Button>(R.id.buttonPause)
         val buttonStop = findViewById<Button>(R.id.buttonStop)
 
         buttonPlay.setOnClickListener {
-            selectedPlayer?.songUri?.let { playSong(it) }
+            selectedPlayer?.songPath?.let { playSong(it) }
         }
         buttonPause.setOnClickListener { pauseSong() }
         buttonStop.setOnClickListener { stopSong() }
@@ -69,13 +85,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        setupRecyclerView()
-        setupSearchView()
-    }
+        buttonSelectFile.setOnClickListener {
+            if (selectedPlayer == null) {
+                Toast.makeText(this, "Please select a player first", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            selectFileLauncher.launch("audio/*")
+        }
 
-    override fun onResume() {
-        super.onResume()
-        initializeMusicService()
+        setupRecyclerView()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -94,16 +112,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun initializeMusicService() {
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val musicSource = sharedPreferences.getString("music_source", "deezer")
-        musicService = if (musicSource == "spotify") {
-            SpotifyService(this)
-        } else {
-            DeezerService()
-        }
-    }
-
     private fun setupRecyclerView() {
         playerAdapter = PlayerAdapter(players) { player ->
             players.forEach { it.isSelected = false }
@@ -115,55 +123,22 @@ class MainActivity : AppCompatActivity() {
         recyclerViewPlayers.adapter = playerAdapter
     }
 
-    private fun setupSearchView() {
-        searchViewSong.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                if (selectedPlayer == null) {
-                    Toast.makeText(this@MainActivity, "Please select a player first", Toast.LENGTH_SHORT).show()
-                    return false
-                }
-                query?.let {
-                    searchTracks(it)
-                }
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                return false
-            }
-        })
-    }
-
-    private fun searchTracks(query: String) {
-        musicService.searchTracks(query) { tracks ->
-            showSongSelectionDialog(tracks)
-        }
-    }
-
-    private fun showSongSelectionDialog(tracks: List<Track>) {
-        val songTitles = tracks.map { it.title }.toTypedArray()
-        AlertDialog.Builder(this)
-            .setTitle("Select a Song")
-            .setItems(songTitles) { _, which ->
-                val selectedSong = tracks[which]
-                selectedPlayer?.songUri = selectedSong.previewUrl
-                selectedPlayer?.songTitle = selectedSong.title
-                val index = players.indexOf(selectedPlayer)
-                if (index != -1) {
-                    playerAdapter.notifyItemChanged(index)
-                }
-                savePlayers()
-            }
-            .show()
-    }
-
-    private fun playSong(url: String) {
+    private fun playSong(path: String) {
         mediaPlayer?.release()
+        handler.removeCallbacksAndMessages(null)
         mediaPlayer = MediaPlayer().apply {
-            setDataSource(url)
+            setDataSource(this@MainActivity, Uri.parse(path))
             prepareAsync()
             setOnPreparedListener {
+                val startTime = selectedPlayer?.startTime ?: 0
+                val endTime = selectedPlayer?.endTime ?: 0
+                seekTo(startTime * 1000)
                 start()
+                if (endTime > 0) {
+                    handler.postDelayed({
+                        stopSong()
+                    }, ((endTime - startTime) * 1000).toLong())
+                }
             }
             setOnErrorListener { _, _, _ ->
                 Toast.makeText(this@MainActivity, "Error playing song.", Toast.LENGTH_SHORT).show()
@@ -199,9 +174,68 @@ class MainActivity : AppCompatActivity() {
         players = gson.fromJson(json, type) ?: mutableListOf()
     }
 
+    private fun requestStoragePermission() {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_AUDIO
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(permission), STORAGE_PERMISSION_CODE)
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == STORAGE_PERMISSION_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Permission denied. App may not function correctly.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun showTimeSelectionDialog(uri: Uri) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_time_selection, null)
+        val editTextStartTime = dialogView.findViewById<EditText>(R.id.editTextStartTime)
+        val editTextEndTime = dialogView.findViewById<EditText>(R.id.editTextEndTime)
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Set Start and End Time")
+            .setView(dialogView)
+            .setPositiveButton("OK", null)
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.setOnShowListener {
+            val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            okButton.setOnClickListener {
+                val startTime = editTextStartTime.text.toString().toIntOrNull() ?: 0
+                val endTime = editTextEndTime.text.toString().toIntOrNull() ?: 0
+
+                if (endTime > startTime) {
+                    selectedPlayer?.songPath = uri.toString()
+                    selectedPlayer?.songTitle = "Local File"
+                    selectedPlayer?.startTime = startTime
+                    selectedPlayer?.endTime = endTime
+                    val index = players.indexOf(selectedPlayer)
+                    if (index != -1) {
+                        playerAdapter.notifyItemChanged(index)
+                    }
+                    savePlayers()
+                    dialog.dismiss()
+                } else {
+                    Toast.makeText(this, "End time must be greater than start time", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        dialog.show()
+    }
 
     override fun onDestroy() {
         super.onDestroy()
         mediaPlayer?.release()
+        handler.removeCallbacksAndMessages(null)
     }
 }

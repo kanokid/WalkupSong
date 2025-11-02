@@ -5,8 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.preference.EditTextPreference
-import androidx.preference.ListPreference
 import androidx.preference.Preference
 
 class SettingsActivity : AppCompatActivity() {
@@ -26,17 +24,6 @@ class SettingsActivity : AppCompatActivity() {
     class SettingsFragment : androidx.preference.PreferenceFragmentCompat() {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.preferences, rootKey)
-
-            val musicSourcePreference: ListPreference? = findPreference("music_source")
-            val spotifyClientIdPreference: EditTextPreference? = findPreference("spotify_client_id")
-
-            spotifyClientIdPreference?.isVisible = musicSourcePreference?.value == "spotify"
-
-            musicSourcePreference?.onPreferenceChangeListener =
-                Preference.OnPreferenceChangeListener { _, newValue ->
-                    spotifyClientIdPreference?.isVisible = newValue == "spotify"
-                    true
-                }
 
             val clearDataPreference: Preference? = findPreference("clear_data")
             clearDataPreference?.onPreferenceClickListener = Preference.OnPreferenceClickListener {

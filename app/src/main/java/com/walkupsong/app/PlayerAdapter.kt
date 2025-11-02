@@ -1,11 +1,12 @@
 package com.walkupsong.app
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.R as R_material
 
 class PlayerAdapter(
     private val players: MutableList<Player>,
@@ -38,7 +39,12 @@ class PlayerAdapter(
             playerName.text = player.name
             playerNumber.text = "#${player.number}"
             playerSong.text = player.songTitle ?: "No song selected"
-            itemView.setBackgroundColor(if (player.isSelected) Color.LTGRAY else Color.TRANSPARENT)
+            val color = if (player.isSelected) {
+                ContextCompat.getColor(itemView.context, R_material.color.material_dynamic_secondary90)
+            } else {
+                ContextCompat.getColor(itemView.context, android.R.color.transparent)
+            }
+            itemView.setBackgroundColor(color)
             itemView.setOnClickListener { onPlayerSelected(player) }
         }
     }
