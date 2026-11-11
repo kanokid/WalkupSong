@@ -43,8 +43,8 @@
     <string name="remove_confirmation">Remove %1$s and their song from the lineup?</string>
     <string name="edit_clip">Change segment</string>
     <string name="clip_title">Change segment</string>
-    <string name="preview_clip">Preview clip</string>
-    <string name="stop_preview">Stop preview</string>
+    <string name="preview_clip">Preview</string>
+    <string name="stop_preview">Stop</string>
     <string name="start_seconds">Start (sec)</string>
     <string name="end_seconds">End (sec)</string>
     <string name="invalid_clip">Use whole seconds: start must be 0 or more, and end must be after start.</string>
@@ -55,7 +55,6 @@
     <string name="file_temporary">This provider only grants temporary access. You may need to choose the file again after reopening the app.</string>
     <string name="speech_empty">No words were recognized in this audio file.</string>
     <string name="song_transcribe_error">Could not transcribe this song. Check your connection and try again.</string>
-    <string name="song_too_large">This audio file is larger than the 25 MB transcription limit.</string>
     <string name="groq_key_title">Groq API key</string>
     <string name="groq_key_prompt">Enter your Groq API key to transcribe songs.</string>
     <string name="groq_key_hint">Groq API key (gsk_…)</string>

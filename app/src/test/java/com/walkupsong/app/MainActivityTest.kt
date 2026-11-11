@@ -101,13 +101,16 @@ class MainActivityTest {
             captured = request
             SongTranscriber.Response(200, """
                 {
-                  "text": "You've been thunderstruck yeah yeah",
+                  "text": "You've been thunderstruck yeah yeah shook me all",
                   "words": [
-                    {"word": "You've", "start": 8.2, "end": 8.8},
-                    {"word": "been", "start": 12.1, "end": 12.7},
-                    {"word": "thunderstruck", "start": 13.0, "end": 15.4},
-                    {"word": "yeah", "start": 18.2, "end": 19.6},
-                    {"word": "yeah", "start": 22.0, "end": 23.8}
+                    {"word": "You've", "start": 8.1, "end": 8.4},
+                    {"word": "been", "start": 8.5, "end": 8.8},
+                    {"word": "thunderstruck", "start": 12.1, "end": 13.4},
+                    {"word": "yeah", "start": 18.1, "end": 18.6},
+                    {"word": "yeah", "start": 18.7, "end": 19.6},
+                    {"word": "shook", "start": 22.0, "end": 22.4},
+                    {"word": "me", "start": 22.4, "end": 22.7},
+                    {"word": "all", "start": 22.7, "end": 23.8}
                   ]
                 }
             """.trimIndent())
@@ -144,17 +147,21 @@ class MainActivityTest {
 
         val chips = dialog().findViewById<ChipGroup>(R.id.chipGroupWords)!!
         assertEquals(View.VISIBLE, chips.visibility)
-        assertEquals(5, chips.childCount)
+        assertEquals(4, chips.childCount)
+        assertEquals("0:08 You've been", (chips.getChildAt(0) as Chip).text.toString())
+        assertEquals("0:12 thunderstruck", (chips.getChildAt(1) as Chip).text.toString())
+        assertEquals("0:18 yeah yeah", (chips.getChildAt(2) as Chip).text.toString())
+        assertEquals("0:22 shook me all", (chips.getChildAt(3) as Chip).text.toString())
 
-        // Tap start word ("been" at 12.1s), rotate, then tap end word ("yeah" at 19.6s)
+        // Tap start group ("thunderstruck" at 12.1s..13.4s), rotate, then tap end group ("yeah yeah" at 18.1s..19.6s)
         chips.getChildAt(1).performClick()
         idle()
         assertEquals("12", dialog().findViewById<EditText>(R.id.editTextStartTime)!!.text.toString())
-        assertEquals("13", dialog().findViewById<EditText>(R.id.editTextEndTime)!!.text.toString())
+        assertEquals("14", dialog().findViewById<EditText>(R.id.editTextEndTime)!!.text.toString())
 
         recreate()
         val recreatedChips = dialog().findViewById<ChipGroup>(R.id.chipGroupWords)!!
-        recreatedChips.getChildAt(3).performClick()
+        recreatedChips.getChildAt(2).performClick()
         idle()
 
         assertEquals("12", dialog().findViewById<EditText>(R.id.editTextStartTime)!!.text.toString())
@@ -162,8 +169,7 @@ class MainActivityTest {
         assertFalse((recreatedChips.getChildAt(0) as Chip).isChecked)
         assertTrue((recreatedChips.getChildAt(1) as Chip).isChecked)
         assertTrue((recreatedChips.getChildAt(2) as Chip).isChecked)
-        assertTrue((recreatedChips.getChildAt(3) as Chip).isChecked)
-        assertFalse((recreatedChips.getChildAt(4) as Chip).isChecked)
+        assertFalse((recreatedChips.getChildAt(3) as Chip).isChecked)
 
         // Preview inside Change segment plays the 8s clip and stops without advancing the batter
         val previewButton = dialog().findViewById<TextView>(R.id.buttonPreviewClip)!!
@@ -200,7 +206,7 @@ class MainActivityTest {
         launch()
         menu(0, R.string.edit_clip)
         assertTrue(dialog().isShowing)
-        dialog().getButton(AlertDialog.BUTTON_NEUTRAL).performClick()
+        dialog().findViewById<View>(R.id.buttonTranscribeClip)!!.performClick()
         idle()
         assertEquals(activity.getString(R.string.groq_auth_error), ShadowToast.getTextOfLatestToast())
         assertNotNull(dialog().findViewById<EditText>(R.id.editTextGroqKey))

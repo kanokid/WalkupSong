@@ -318,6 +318,7 @@ class MainActivity : AppCompatActivity() {
         val start = view.findViewById<EditText>(R.id.editTextStartTime)
         val end = view.findViewById<EditText>(R.id.editTextEndTime)
         val preview = view.findViewById<MaterialButton>(R.id.buttonPreviewClip)
+        val transcribe = view.findViewById<MaterialButton>(R.id.buttonTranscribeClip)
         val sameFile = player.songPath == uri.toString()
         start.setText(draft?.getString("start") ?: if (sameFile) player.startTime.toString() else "0")
         end.setText(draft?.getString("end") ?: if (sameFile) player.endTime.toString() else "30")
@@ -335,18 +336,17 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        transcribe.setOnClickListener {
+            requestSongTranscription(player, uri)
+        }
         val dialog = MaterialAlertDialogBuilder(this)
             .setTitle(R.string.clip_title)
             .setView(view)
             .setPositiveButton(R.string.save, null)
             .setNegativeButton(R.string.cancel, null)
-            .setNeutralButton(R.string.transcribe_song, null)
             .create()
         trackEditor(dialog, "clip", player, uri.toString())
         dialog.show()
-        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
-            requestSongTranscription(player, uri)
-        }
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             val from = start.text.toString().toIntOrNull()
             val to = end.text.toString().toIntOrNull()
@@ -379,14 +379,15 @@ class MainActivity : AppCompatActivity() {
         val chipGroup = dialog.findViewById<ChipGroup>(R.id.chipGroupWords) ?: return
         val startInput = dialog.findViewById<EditText>(R.id.editTextStartTime) ?: return
         val endInput = dialog.findViewById<EditText>(R.id.editTextEndTime) ?: return
-        val transcribeButton = dialog.getButton(AlertDialog.BUTTON_NEUTRAL)
+        val transcribeButton = dialog.findViewById<MaterialButton>(R.id.buttonTranscribeClip)
 
         val transcribing = SongTranscriber.isBusy
         progress.isVisible = transcribing
         transcribeButton?.isEnabled = !transcribing
         transcribeButton?.setText(if (transcribing) R.string.transcribing_song else R.string.transcribe_song)
 
-        val words = player.words.orEmpty()
+        val words = SongTranscriber.groupByTimeframe(player.words.orEmpty())
+        player.words = words.takeIf { it.isNotEmpty() }
         chipGroup.removeAllViews()
         if (words.isEmpty()) {
             chipGroup.isVisible = false
@@ -398,7 +399,7 @@ class MainActivity : AppCompatActivity() {
         val currentEnd = endInput.text.toString().toIntOrNull() ?: player.endTime
         val anchor = anchorWordIndex?.let { words.getOrNull(it) }
         val inClipWords = words.filter { it.end > currentStart && it.start < currentEnd }
-        val excerpt = inClipWords.ifEmpty { words.take(6) }.joinToString(" ") { it.word }
+        val excerpt = inClipWords.ifEmpty { words }.joinToString(" ") { it.word }
         prompt.text = when {
             transcribing -> getString(R.string.transcribing_song)
             anchor != null -> getString(R.string.word_clip_tap_end, time(floor(anchor.start).toInt()), anchor.word)
@@ -411,6 +412,7 @@ class MainActivity : AppCompatActivity() {
                 isCheckable = true
                 isChecked = inClip
                 isCheckedIconVisible = false
+                setEnsureMinTouchTargetSize(false)
                 setOnClickListener {
                     onDialogWordTapped(player, index, startInput, endInput)
                 }
