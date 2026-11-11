@@ -2,12 +2,23 @@
 <androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <androidx.preference.PreferenceCategory
-        app:title="Data Management">
+        app:title="@string/transcription_settings">
+
+        <androidx.preference.EditTextPreference
+            app:key="groq_api_key"
+            app:title="@string/groq_key_title"
+            app:dialogTitle="@string/groq_key_title"
+            app:dialogMessage="@string/groq_key_prompt" />
+
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.PreferenceCategory
+        app:title="@string/data_management">
 
         <androidx.preference.Preference
             app:key="clear_data"
-            app:title="Clear Batting Order"
-            app:summary="Deletes all players from the batting order" />
+            app:title="@string/clear_batting_order"
+            app:summary="@string/clear_batting_order_summary" />
 
     </androidx.preference.PreferenceCategory>
 

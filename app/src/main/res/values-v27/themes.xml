@@ -1,0 +1,6 @@
+<resources>
+    <style name="Theme.WalkupSong" parent="Base.Theme.WalkupSong">
+        <item name="android:windowLightStatusBar">@bool/light_system_bars</item>
+        <item name="android:windowLightNavigationBar">@bool/light_system_bars</item>
+    </style>
+</resources>

@@ -7,12 +7,18 @@ android {
     namespace 'com.walkupsong.app'
     compileSdk 34
 
+    buildFeatures {
+        buildConfig true
+    }
     defaultConfig {
         applicationId "com.walkupsong.app"
         minSdk 21
         targetSdk 34
         versionCode 1
         versionName "1.0"
+        def groqKey = (project.findProperty("GROQ_API_KEY") ?: System.getenv("GROQ_API_KEY") ?: "").toString()
+            .replace("\\", "\\\\").replace("\"", "\\\"")
+        buildConfigField "String", "GROQ_API_KEY", "\"${groqKey}\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -30,6 +36,9 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    testOptions {
+        unitTests.includeAndroidResources = true
+    }
 }
 
 dependencies {
@@ -38,4 +47,6 @@ dependencies {
     implementation 'com.google.android.material:material:1.10.0'
     implementation 'androidx.preference:preference-ktx:1.2.1'
     implementation 'com.google.code.gson:gson:2.10.1'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.14.1'
 }

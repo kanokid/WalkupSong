@@ -1,7 +1,33 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Theme.WalkupSong" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+<resources>
+    <style name="Base.Theme.WalkupSong" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorPrimaryContainer">@color/primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_container</item>
+        <item name="colorSecondaryContainer">@color/secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/on_primary_container</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
+        <item name="colorSurfaceVariant">@color/surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/on_surface_variant</item>
+        <item name="android:colorBackground">@color/surface</item>
+        <item name="android:statusBarColor">@color/surface</item>
+        <item name="android:navigationBarColor">@color/surface</item>
+        <item name="shapeAppearanceSmallComponent">@style/Shape.Walkup.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/Shape.Walkup.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/Shape.Walkup.Large</item>
+    </style>
+    <style name="Theme.WalkupSong" parent="Base.Theme.WalkupSong">
+        <item name="android:statusBarColor">#101B16</item>
+        <item name="android:navigationBarColor">#101B16</item>
+    </style>
+    <style name="Shape.Walkup.Small" parent="ShapeAppearance.Material3.Corner.Small">
+        <item name="cornerSize">16dp</item>
+    </style>
+    <style name="Shape.Walkup.Medium" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerSize">24dp</item>
+    </style>
+    <style name="Shape.Walkup.Large" parent="ShapeAppearance.Material3.Corner.Large">
+        <item name="cornerSize">32dp</item>
     </style>
 </resources>
