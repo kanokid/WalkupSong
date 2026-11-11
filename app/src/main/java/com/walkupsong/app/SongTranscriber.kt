@@ -7,7 +7,6 @@ import android.os.Looper
 import androidx.annotation.StringRes
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Locale
@@ -18,7 +17,6 @@ import java.util.concurrent.Executors
 object SongTranscriber {
     const val MODEL = "whisper-large-v3"
     const val ENDPOINT = "https://api.groq.com/openai/v1/audio/transcriptions"
-    const val MAX_UPLOAD_BYTES = 25 * 1024 * 1024
 
     sealed class Outcome {
         data class Success(val words: List<TimedWord>) : Outcome()
@@ -134,7 +132,6 @@ object SongTranscriber {
                     if (words.isEmpty()) Outcome.Failure(R.string.speech_empty) else Outcome.Success(words)
                 }
                 401, 403 -> Outcome.Failure(R.string.groq_auth_error, authFailure = true)
-                413 -> Outcome.Failure(R.string.song_too_large)
                 else -> Outcome.Failure(R.string.song_transcribe_error)
             }
         } catch (_: Exception) {
@@ -143,7 +140,7 @@ object SongTranscriber {
     }
 
     internal fun parseWords(json: JSONObject): List<TimedWord> {
-        val result = mutableListOf<TimedWord>()
+        val raw = mutableListOf<TimedWord>()
         val wordsArray = json.optJSONArray("words")
         if (wordsArray != null) {
             for (i in 0 until wordsArray.length()) {
@@ -152,11 +149,29 @@ object SongTranscriber {
                 val start = item.optDouble("start", Double.NaN)
                 val end = item.optDouble("end", Double.NaN)
                 if (text.isNotEmpty() && !start.isNaN() && !end.isNaN() && end >= start) {
-                    result.add(TimedWord(text, start, maxOf(end, start + 0.1)))
+                    raw.add(TimedWord(text, start, maxOf(end, start + 0.1)))
                 }
             }
         }
-        return result
+        return groupByTimeframe(raw)
+    }
+
+    internal fun groupByTimeframe(words: List<TimedWord>): List<TimedWord> {
+        if (words.isEmpty()) return emptyList()
+        val grouped = mutableListOf<TimedWord>()
+        for (item in words) {
+            val last = grouped.lastOrNull()
+            if (last != null && kotlin.math.floor(last.start).toInt() == kotlin.math.floor(item.start).toInt()) {
+                grouped[grouped.lastIndex] = TimedWord(
+                    word = "${last.word} ${item.word}",
+                    start = last.start,
+                    end = maxOf(last.end, item.end)
+                )
+            } else {
+                grouped.add(item)
+            }
+        }
+        return grouped
     }
 
     private fun preparePayload(context: Context, player: Player): PayloadResult {
@@ -165,10 +180,7 @@ object SongTranscriber {
         val raw = try {
             val stream = context.contentResolver.openInputStream(uri)
                 ?: return PayloadResult.Error(R.string.file_error)
-            stream.use { readBounded(it, MAX_UPLOAD_BYTES) }
-                ?: return PayloadResult.Error(R.string.song_too_large)
-        } catch (_: OutOfMemoryError) {
-            return PayloadResult.Error(R.string.song_too_large)
+            stream.use { it.readBytes() }
         } catch (_: Exception) {
             return PayloadResult.Error(R.string.file_error)
         }
@@ -183,20 +195,6 @@ object SongTranscriber {
             mimeType = mime,
             bytes = raw
         ))
-    }
-
-    private fun readBounded(stream: InputStream, limit: Int): ByteArray? {
-        val out = ByteArrayOutputStream()
-        val buffer = ByteArray(8192)
-        var total = 0
-        while (true) {
-            val read = stream.read(buffer)
-            if (read < 0) break
-            total += read
-            if (total > limit) return null
-            out.write(buffer, 0, read)
-        }
-        return out.toByteArray()
     }
 
     private fun resolveFormat(title: String?, uri: Uri, mimeType: String?): Pair<String, String> {
